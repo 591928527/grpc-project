@@ -1,0 +1,62 @@
+--protoc编译器
+https://github.com/protocolbuffers/protobuf/releases/latest
+
+--golang protobuf编译器
+go get -u github.com/golang/protobuf/protoc-gen-go@v1.3.2
+
+自签证书工具
+https://slproweb.com/products/Win32OpenSSL.html
+
+使用CA证书
+openssl genrsa -out ca.key 2048
+openssl req -new -x509 -days 3650 -key ca.key -out ca.pem
+
+server端证书
+1、openssl genrsa -out server.key 2048
+2、openssl req -new -key server.key -out server.csr   //生成请求证书文件  注意common name 的一致（locakhost或服务端域名）
+3、openssl x509 -req -sha256 -CA ca.pem -CAkey ca.key -CAcreateserial -days 3650 -in server.csr -out server.pem
+
+clinet端证书
+1、openssl ecparam -genkey -name secp384r1 -out client.key
+2、openssl req -new -key client.key -out client.csr  // common name 与server一致
+3、openssl x509 -req -sha256 -CA ca.pem -CAkey ca.key -CAcreateserial -days 3650 -in client.csr -out client.pem
+
+参考文献：https://www.jianshu.com/p/99941d7b8368
+
+
+
+grpc-gateway 提供 rpc 和 http 接口
+https://github.com/grpc-ecosystem/grpc-gateway
+
+go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
+go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
+go get -u github.com/golang/protobuf/protoc-gen-go@v1.3.2
+
+protoc-gen-grpc-gateway
+protoc-gen-swagger
+protoc-gen-go
+
+github.com\grpc-ecosystem\grpc-gateway@v1.16.0\third_party\googleapis\google proto文件拷贝出来
+
+
+第三方验证库proto-gen-validate
+https://github.com/envoyproxy/protoc-gen-validate
+
+go get -u  github.com/envoyproxy/protoc-gen-validate
+生成：protoc-gen-validate
+
+github.com\envoyproxy\protoc-gen-validate\validate 拷贝validate.proto
+再引入：import "validate/validate.proto";
+
+
+--go_out                                         去$GOBIN目录下找proto-gen-go编译成golang文件
+--validate_out=lang=go:../services               生成 *.pb.validate.go
+--grpc-gateway_out=logtostderr=true:../services  生成grpc-gateway相关的golang文件
+
+protoc --go_out=plugins=grpc:../services Prot.proto
+protoc --go_out=plugins=grpc:../services Orders.proto
+protoc --go_out=plugins=grpc:../services --validate_out=lang=go:../services Model.proto
+
+生成grpc-gateway相关的golang文件
+protoc --grpc-gateway_out=logtostderr=true:../services Prot.proto
+protoc --grpc-gateway_out=logtostderr=true:../services Orders.proto
